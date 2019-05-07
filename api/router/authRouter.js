@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
+
 const Users = require('./users-model');
 
 
@@ -24,11 +25,12 @@ router.post('/login', (req, res) => {
     .first()
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
+        req.session.user = user
         res.status(200).json({
-          message: `Welcome ${user.username}! You're Logged in`,
+          message: `Welcome ${user.username}! `,
         });
       } else {
-        res.status(401).json({ message: 'Invalid credentials please try again.' });
+        res.status(401).json({ message: 'Invalid Credentials, please try again' });
       }
     })
     .catch(error => {
@@ -36,6 +38,18 @@ router.post('/login', (req, res) => {
     });
 });
 
-
+router.get('/logout', (req, res) =>{
+  if(req.session){
+    req.session.destroy(error =>{
+      if (error){
+        res.status(500).json({message: 'Server error'})
+      }else{
+        res.send('See you soon!')
+      }
+    })
+  }else{
+    res.status(401).json({message: 'You need to be logged in before you can logout!'})
+  }
+})
 
 module.exports = router;
