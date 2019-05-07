@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
-
 const Users = require('./users-model');
 
 
@@ -51,5 +50,21 @@ router.get('/logout', (req, res) =>{
     res.status(401).json({message: 'You need to be logged in before you can logout!'})
   }
 })
+
+function restricted(req, res, next) {
+  if (req.session && req.session.user) {
+      next();
+  } else {
+      res.status(401).json({message: 'Invalid credentials'});
+  }
+}
+
+router.get('/users', restricted, (req, res) => {
+  Users.find()
+    .then(users => {
+        res.json(users);
+    })
+    .catch(error => res.send(error));
+});
 
 module.exports = router;
